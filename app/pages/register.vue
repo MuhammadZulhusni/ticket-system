@@ -2,13 +2,11 @@
   <div class="flex min-h-screen items-center justify-center bg-gray-100 px-4">
     <ACard :bordered="true" class="w-full max-w-md" :body-style="{ padding: '32px' }">
       
-      <!-- Header -->
       <div class="mb-6 text-center">
         <ATypographyTitle :heading="3" class="!mb-1">TicketSys</ATypographyTitle>
         <ATypographyText type="secondary">Create your account to get started</ATypographyText>
       </div>
 
-      <!-- Error Message -->
       <AAlert
         v-if="errorMessage"
         type="error"
@@ -19,7 +17,6 @@
         {{ errorMessage }}
       </AAlert>
 
-      <!-- Registration Form -->
       <AForm
         ref="formRef"
         :model="form"
@@ -150,8 +147,6 @@ const form = reactive({
 const errorMessage = ref('')
 const loading = ref(false)
 
-// Handle registration form submission
-// Uses composable: useAuth().handleRegister()
 async function submitRegister() {
   errorMessage.value = ''
   loading.value = true

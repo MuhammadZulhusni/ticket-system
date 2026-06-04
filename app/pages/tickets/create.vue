@@ -2,7 +2,6 @@
   <div class="min-h-screen flex justify-center py-10 px-4">
     <div class="w-full max-w-lg">
       
-      <!-- Form card -->
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <AForm ref="formRef" :model="form" :rules="rules" layout="vertical" @submit="handleSubmit">
 
@@ -67,7 +66,6 @@ definePageMeta({
   middleware: ['sanctum:auth']
 })
 
-// Use ticket composable 
 const { createTicket } = useTickets()
 
 interface TicketForm {
@@ -113,8 +111,6 @@ const rules = {
   ],
 }
 
-//  Handle form submission
-//  Uses composable: useTickets().createTicket()
 async function handleSubmit() {
   const invalid = await formRef.value?.validate()
   if (invalid) return

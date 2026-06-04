@@ -2,7 +2,6 @@
   <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto py-10 px-4">
       
-      <!-- Header -->
       <div class="flex items-center justify-between mb-8">
         <div>
           <ATypographyTitle :heading="2" class="!mb-1">Tickets</ATypographyTitle>
@@ -18,7 +17,6 @@
         </ASpace>
       </div>
 
-      <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
         <ASpin :loading="true" size="large">
           <div class="h-32"></div>
@@ -26,7 +24,6 @@
         <ATypographyText type="secondary" class="mt-4 block">Loading tickets...</ATypographyText>
       </div>
 
-      <!-- Error State -->
       <ACard v-else-if="error" :bordered="true" class="text-center py-12">
         <AResult
           status="error"
@@ -39,7 +36,6 @@
         </AResult>
       </ACard>
 
-      <!-- Empty State -->
       <ACard v-else-if="!tickets.length" :bordered="true" class="text-center py-12">
         <AResult
           status="404"
@@ -54,7 +50,6 @@
         </AResult>
       </ACard>
 
-      <!-- Tickets Table -->
       <ACard v-else :bordered="true" class="overflow-hidden">
         <ATable
           :columns="columns"
@@ -107,7 +102,6 @@
         </ATable>
       </ACard>
 
-      <!-- Delete Confirmation Modal -->
       <AModal
         v-model:visible="deleteModal.isOpen"
         title="Delete Ticket"
@@ -176,14 +170,12 @@ const { tickets, loading, error, fetchTickets, deleteTicket } = useTickets()
 const { handleLogout } = useAuth()
 const { getStatusColor, getPriorityColor, formatStatus, formatPriority } = useHelpers()
 
-// Delete modal state
 const deleting = ref(false)
 const deleteModal = ref<{ isOpen: boolean; ticket: any | null }>({
   isOpen: false,
   ticket: null
 })
 
-// Table columns
 const columns = [
   {
     title: 'ID',
@@ -221,7 +213,6 @@ const columns = [
   }
 ]
 
-// Delete operations
 function openDeleteModal(ticket: any) {
   deleteModal.value.ticket = ticket
   deleteModal.value.isOpen = true
@@ -252,7 +243,6 @@ async function confirmDelete() {
   }
 }
 
-// Fetch tickets on mount
 onMounted(() => {
   fetchTickets()
 })

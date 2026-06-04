@@ -2,13 +2,11 @@
   <div class="flex min-h-screen items-center justify-center bg-gray-100 px-4">
     <ACard :bordered="true" class="w-full max-w-md" :body-style="{ padding: '32px' }">
       
-      <!-- Header -->
       <div class="mb-6 text-center">
         <ATypographyTitle :heading="3" class="!mb-1">TicketSys</ATypographyTitle>
         <ATypographyText type="secondary">Sign in to manage your tickets</ATypographyText>
       </div>
 
-      <!-- Info Message -->
       <AAlert
         v-if="infoMessage"
         type="warning"
@@ -19,7 +17,6 @@
         {{ infoMessage }}
       </AAlert>
 
-      <!-- Error Message -->
       <AAlert
         v-if="error"
         type="error"
@@ -30,7 +27,6 @@
         {{ error }}
       </AAlert>
 
-      <!-- Login Form -->
       <AForm
         ref="formRef"
         :model="form"
@@ -129,8 +125,6 @@ onMounted(() => {
   }
 })
 
-// Handle login form submission
-// Uses composable: useAuth().handleLogin()
 async function submit() {
   error.value = ''
   infoMessage.value = ''

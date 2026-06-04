@@ -2,7 +2,6 @@
   <div class="min-h-screen flex justify-center py-10 px-4">
     <div class="w-full max-w-lg">
 
-      <!-- Form card -->
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <AForm ref="formRef" :model="form" :rules="rules" layout="vertical" @submit="handleUpdate">
 
@@ -71,7 +70,6 @@ definePageMeta({
 const route = useRoute()
 const ticketId = Number(route.params.id)
 
-// Use ticket composable 
 const { getTicket, updateTicket } = useTickets()
 
 interface TicketForm {
@@ -92,8 +90,6 @@ const form = reactive<TicketForm>({
   description: '',
 })
 
-// Fetch ticket data using composable
-// Uses: useTickets().getTicket()
 const { data } = await useAsyncData(`ticket-${ticketId}`, () => 
   getTicket(ticketId)
 )
@@ -112,7 +108,6 @@ watch(data, (ticketData: any) => {
 const submitting = ref(false)
 const formRef = ref<any>(null)
 
-// Rules for form validation
 const rules = {
   subject: [
     { required: true, message: 'Subject is required' }
@@ -135,8 +130,6 @@ const rules = {
   ],
 }
 
-// Handle form update
-// Uses composable: useTickets().updateTicket()
 async function handleUpdate() {
   const invalid = await formRef.value?.validate()
   if (invalid) return

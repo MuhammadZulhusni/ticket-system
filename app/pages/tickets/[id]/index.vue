@@ -2,14 +2,12 @@
   <div class="min-h-screen bg-gray-50 flex justify-center py-10 px-4">
     <div class="w-full max-w-lg">
 
-      <!-- Back link -->
       <div class="mb-6">
         <AButton type="text" @click="navigateTo('/tickets')" class="!px-0">
           Back to All Tickets
         </AButton>
       </div>
 
-      <!-- Loading State -->
       <div v-if="loading" class="text-center py-12">
         <ASpin :loading="true" size="large">
           <div class="h-32"></div>
@@ -17,7 +15,6 @@
         <ATypographyText type="secondary" class="mt-4 block">Loading ticket...</ATypographyText>
       </div>
 
-      <!-- Error State -->
       <ACard v-else-if="error" :bordered="true">
         <AResult
           status="error"
@@ -32,7 +29,6 @@
         </AResult>
       </ACard>
 
-      <!-- Ticket Details -->
       <template v-else-if="ticket">
         <!-- Header -->
         <div class="flex items-center justify-between mb-4">
@@ -54,7 +50,6 @@
           </AButton>
         </div>
 
-        <!-- Badges -->
         <ASpace :size="8" class="mb-5">
           <ATag :color="getStatusColor(ticket.status)" size="large">
             {{ formatStatus(ticket.status) }}
@@ -64,7 +59,6 @@
           </ATag>
         </ASpace>
 
-        <!-- Detail card -->
         <ACard :bordered="true">
           <ADescriptions
             :column="2"
@@ -131,15 +125,10 @@ definePageMeta({
 const { getTicket } = useTickets()
 const { getStatusColor, getPriorityColor, formatStatus, formatPriority, formatDate } = useHelpers()
 
-// Local state for this page
 const ticket = ref<any>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 
-
-// Fetch ticket details
-// Uses composable: useTickets().getTicket()
-// Uses composable: useHelpers() for formatting
 async function fetchTicket() {
   loading.value = true
   error.value = null
