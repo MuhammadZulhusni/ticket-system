@@ -1,7 +1,8 @@
 <template>
   <div class="min-h-screen flex justify-center py-10 px-4">
     <div class="w-full max-w-lg">
-
+      
+      <!-- Form card -->
       <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-6">
         <AForm ref="formRef" :model="form" :rules="rules" layout="vertical" @submit="handleSubmit">
 
@@ -19,7 +20,7 @@
 
           <div class="grid grid-cols-2 gap-4">
             <AFormItem field="status" label="Status" required>
-              <ASelect v-model="form.status" placeholder="Select status">
+              <ASelect v-model="form.status">
                 <AOption value="open">Open</AOption>
                 <AOption value="in_progress">In Progress</AOption>
                 <AOption value="resolved">Resolved</AOption>
@@ -28,7 +29,7 @@
             </AFormItem>
 
             <AFormItem field="priority" label="Priority" required>
-              <ASelect v-model="form.priority" placeholder="Select priority">
+              <ASelect v-model="form.priority">
                 <AOption value="low">Low</AOption>
                 <AOption value="medium">Medium</AOption>
                 <AOption value="high">High</AOption>
@@ -38,11 +39,7 @@
           </div>
 
           <AFormItem field="description" label="Description" required>
-            <ATextarea
-              v-model="form.description"
-              placeholder="Describe the issue in detail..."
-              :auto-size="{ minRows: 4 }"
-            />
+            <ATextarea v-model="form.description" :auto-size="{ minRows: 4 }" />
           </AFormItem>
 
           <div class="flex justify-end gap-2 pt-2">
@@ -50,7 +47,7 @@
               <AButton size="small">Cancel</AButton>
             </NuxtLink>
             <AButton type="primary" size="small" html-type="submit" :loading="submitting">
-              Submit Ticket
+              {{ submitting ? 'Creating...' : 'Create Ticket' }}
             </AButton>
           </div>
 
@@ -60,49 +57,74 @@
   </div>
 </template>
 
-<script setup>
-const { $message } = useNuxtApp()
-const router = useRouter()
-const config = useRuntimeConfig()
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
 
-const form = reactive({
+// Import composable
+import { useTickets } from '~/composables/useTickets'
+
+definePageMeta({
+  middleware: ['sanctum:auth']
+})
+
+// Use ticket composable 
+const { createTicket } = useTickets()
+
+interface TicketForm {
+  subject: string
+  requester_name: string
+  requester_email: string
+  status: string
+  priority: string
+  description: string
+}
+
+const form = reactive<TicketForm>({
   subject: '',
   requester_name: '',
   requester_email: '',
-  status: '',
-  priority: '',
+  status: 'open',
+  priority: 'medium',
   description: '',
 })
 
 const submitting = ref(false)
-const formRef = ref(null)
+const formRef = ref<any>(null)
 
 const rules = {
-  subject:         [{ required: true, message: 'Subject is required' }],
-  requester_name:  [{ required: true, message: 'Name is required' }],
+  subject: [
+    { required: true, message: 'Subject is required' }
+  ],
+  requester_name: [
+    { required: true, message: 'Name is required' }
+  ],
   requester_email: [
     { required: true, message: 'Email is required' },
-    { type: 'email', message: 'Enter a valid email' },
+    { type: 'email' as const, message: 'Enter a valid email' }
   ],
-  status:      [{ required: true, message: 'Select a status' }],
-  priority:    [{ required: true, message: 'Select a priority' }],
-  description: [{ required: true, message: 'Description is required' }],
+  status: [
+    { required: true, message: 'Select a status' }
+  ],
+  priority: [
+    { required: true, message: 'Select a priority' }
+  ],
+  description: [
+    { required: true, message: 'Description is required' }
+  ],
 }
 
-async function handleSubmit({ errors }) {
-  if (errors) return
+//  Handle form submission
+//  Uses composable: useTickets().createTicket()
+async function handleSubmit() {
+  const invalid = await formRef.value?.validate()
+  if (invalid) return
 
   submitting.value = true
   try {
-    await $fetch(`${config.public.apiBase}/tickets`, {
-      method: 'POST',
-      body: form,
-    })
-    $message.success('Ticket submitted successfully!')
-    router.push('/tickets')
-  } catch (error) {
-    $message.error('Failed to submit ticket. Please try again.')
-    console.error(error)
+    await createTicket(form)
+    navigateTo('/tickets')
+  } catch (err) {
+    console.error('Create ticket failed:', err)
   } finally {
     submitting.value = false
   }

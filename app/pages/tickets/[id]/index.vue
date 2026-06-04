@@ -1,61 +1,161 @@
 <template>
-  <div class="min-h-screen flex justify-center py-10 px-4">
+  <div class="min-h-screen bg-gray-50 flex justify-center py-10 px-4">
     <div class="w-full max-w-lg">
 
       <!-- Back link -->
-      <NuxtLink to="/tickets" class="text-xs text-gray-400 hover:text-gray-600 mb-6 block">
-        Back to All Tickets
-      </NuxtLink>
-
-      <!-- Header -->
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <span class="text-xs text-gray-400 font-mono">TICKET #{{ ticket.id }}</span>
-          <h2 class="text-lg font-semibold text-gray-800">{{ ticket.subject }}</h2>
-        </div>
+      <div class="mb-6">
+        <AButton type="text" @click="navigateTo('/tickets')" class="!px-0">
+          Back to All Tickets
+        </AButton>
       </div>
 
-      <!-- Badges -->
-      <div class="flex gap-2 mb-5">
-        <StatusBadge :status="ticket.status" />
-        <PriorityBadge :priority="ticket.priority" />
+      <!-- Loading State -->
+      <div v-if="loading" class="text-center py-12">
+        <ASpin :loading="true" size="large">
+          <div class="h-32"></div>
+        </ASpin>
+        <ATypographyText type="secondary" class="mt-4 block">Loading ticket...</ATypographyText>
       </div>
 
-      <!-- Detail card -->
-      <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-5 space-y-4">
+      <!-- Error State -->
+      <ACard v-else-if="error" :bordered="true">
+        <AResult
+          status="error"
+          title="Error loading ticket"
+          :subtitle="error"
+        >
+          <template #extra>
+            <AButton type="primary" @click="navigateTo('/tickets')">
+              Back to tickets
+            </AButton>
+          </template>
+        </AResult>
+      </ACard>
 
-        <div class="grid grid-cols-2 gap-4">
+      <!-- Ticket Details -->
+      <template v-else-if="ticket">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4">
           <div>
-            <p class="text-xs text-gray-400 uppercase mb-1">Requester</p>
-            <p class="text-sm font-medium text-gray-700">{{ ticket.requester_name }}</p>
+            <ATag color="arcoblue" class="mb-2">
+              TICKET #{{ ticket.id }}
+            </ATag>
+            <ATypographyTitle :heading="3" class="!mb-0">{{ ticket.subject }}</ATypographyTitle>
           </div>
+          <AButton
+            type="primary"
+            size="small"
+            @click="navigateTo(`/tickets/${ticket.id}/edit`)"
+          >
+            <template #icon>
+              <IconEdit />
+            </template>
+            Edit
+          </AButton>
+        </div>
+
+        <!-- Badges -->
+        <ASpace :size="8" class="mb-5">
+          <ATag :color="getStatusColor(ticket.status)" size="large">
+            {{ formatStatus(ticket.status) }}
+          </ATag>
+          <ATag :color="getPriorityColor(ticket.priority)" size="large">
+            {{ formatPriority(ticket.priority) }}
+          </ATag>
+        </ASpace>
+
+        <!-- Detail card -->
+        <ACard :bordered="true">
+          <ADescriptions
+            :column="2"
+            layout="inline-horizontal"
+            :label-style="{ color: '#9ca3af', fontSize: '12px', textTransform: 'uppercase', marginBottom: '4px' }"
+            :value-style="{ color: '#374151', fontSize: '14px', fontWeight: '500' }"
+          >
+            <ADescriptionsItem label="Requester">
+              {{ ticket.requester_name }}
+            </ADescriptionsItem>
+            <ADescriptionsItem label="Email">
+              {{ ticket.requester_email }}
+            </ADescriptionsItem>
+          </ADescriptions>
+
+          <ADivider />
+
           <div>
-            <p class="text-xs text-gray-400 uppercase mb-1">Email</p>
-            <p class="text-sm font-medium text-gray-700">{{ ticket.requester_email }}</p>
+            <ATypographyText type="secondary" class="text-xs uppercase block mb-2">
+              Description
+            </ATypographyText>
+            <ATypographyText class="text-sm whitespace-pre-wrap leading-relaxed">
+              {{ ticket.description }}
+            </ATypographyText>
           </div>
-        </div>
 
-        <ADivider style="margin: 0" />
+          <ADivider />
 
-        <div>
-          <p class="text-xs text-gray-400 uppercase mb-1">Description</p>
-          <p class="text-sm text-gray-600 whitespace-pre-wrap leading-relaxed">
-            {{ ticket.description }}
-          </p>
-        </div>
+          <ADescriptions
+            :column="2"
+            layout="inline-horizontal"
+            :label-style="{ color: '#9ca3af', fontSize: '12px' }"
+            :value-style="{ color: '#6b7280', fontSize: '12px' }"
+            >
+            <ADescriptionsItem label="Created">
+              {{ formatDate(ticket.created_at) }}
+            </ADescriptionsItem>
+            <ADescriptionsItem label="Updated">
+              {{ formatDate(ticket.updated_at) }}
+            </ADescriptionsItem>
+          </ADescriptions>
+        </ACard>
+      </template>
 
-      </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { IconArrowLeft, IconEdit } from '@arco-design/web-vue/es/icon'
+
+// Import composables
+import { useTickets } from '~/composables/useTickets'
+import { useHelpers } from '~/composables/useHelpers'
+
 const route = useRoute()
-const config = useRuntimeConfig()
 
-const { data } = await useFetch(
-  `${config.public.apiBase}/tickets/${route.params.id}`
-)
+definePageMeta({
+  middleware: ['sanctum:auth']
+})
 
-const ticket = computed(() => data.value?.data ?? {})
+// Use composables
+const { getTicket } = useTickets()
+const { getStatusColor, getPriorityColor, formatStatus, formatPriority, formatDate } = useHelpers()
+
+// Local state for this page
+const ticket = ref<any>(null)
+const loading = ref(true)
+const error = ref<string | null>(null)
+
+
+// Fetch ticket details
+// Uses composable: useTickets().getTicket()
+// Uses composable: useHelpers() for formatting
+async function fetchTicket() {
+  loading.value = true
+  error.value = null
+  
+  try {
+    const ticketId = Number(route.params.id)
+    ticket.value = await getTicket(ticketId)
+  } catch (err: any) {
+    error.value = err?.data?.message || 'Failed to load ticket'
+    console.error('Failed to fetch ticket:', err)
+  } finally {
+    loading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchTicket()
+})
 </script>

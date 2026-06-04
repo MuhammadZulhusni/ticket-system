@@ -1,23 +1,41 @@
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/tailwindcss'],
-  css: ['~/assets/css/main.css'],
+    modules: ['@nuxtjs/tailwindcss', 'nuxt-auth-sanctum'],
+    css: [
+        '~/assets/css/main.css',
+        '@arco-design/web-vue/dist/arco.css'
+    ],
 
-  runtimeConfig: {
-    public: {
-      apiBase: 'http://localhost:8000/api',
+    runtimeConfig: {
+        public: {
+            apiBase: 'http://localhost:8000/api', 
+        },
     },
-  },
 
-  // Speed up dev server
-  vite: {
-    server: {
-      warmup: {
-        clientFiles: ['./app/**/*.vue'],
-      }
-    }
-  },
+    sanctum: {
+        baseUrl: 'http://localhost:8000',         
+        mode: 'cookie',                            
+        endpoints: {
+            csrf: '/sanctum/csrf-cookie',          
+            login: '/api/login',                    
+            logout: '/api/logout',                 
+            user: '/api/user',                     
+        },
+        redirect: {
+            onLogin: '/tickets',                    // Redirect after login
+            onLogout: '/login',                     // Redirect after logout
+            onAuthOnly: '/login',                   // Redirect if not authenticated
+            onGuestOnly: '/tickets',                // Redirect if already authenticated
+        },
+    },
 
-  devtools: { enabled: false }, 
+    vite: {
+        server: {
+            warmup: {
+                clientFiles: ['./app/**/*.vue'],   
+            },
+        },
+    },
 
-  compatibilityDate: '2024-11-01',
+    devtools: { enabled: true },                   
+    compatibilityDate: '2024-11-01',               
 })

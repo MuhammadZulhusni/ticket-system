@@ -43,7 +43,7 @@
           </AFormItem>
 
           <div class="flex justify-end gap-2 pt-2">
-            <NuxtLink :to="`/tickets`">
+            <NuxtLink to="/tickets">
               <AButton size="small">Cancel</AButton>
             </NuxtLink>
             <AButton type="primary" size="small" html-type="submit" :loading="submitting">
@@ -57,17 +57,33 @@
   </div>
 </template>
 
-<script setup>
-import { Message } from '@arco-design/web-vue'
+<script setup lang="ts">
+import { reactive, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
+
+// Import composable
+import { useTickets } from '~/composables/useTickets'
+
+definePageMeta({
+  middleware: ['sanctum:auth']
+})
 
 const route = useRoute()
-const router = useRouter()
-const config = useRuntimeConfig()
-const ticketId = route.params.id
+const ticketId = Number(route.params.id)
 
-const { data } = await useFetch(`${config.public.apiBase}/tickets/${ticketId}`)
+// Use ticket composable 
+const { getTicket, updateTicket } = useTickets()
 
-const form = reactive({
+interface TicketForm {
+  subject: string
+  requester_name: string
+  requester_email: string
+  status: string
+  priority: string
+  description: string
+}
+
+const form = reactive<TicketForm>({
   subject: '',
   requester_name: '',
   requester_email: '',
@@ -76,47 +92,61 @@ const form = reactive({
   description: '',
 })
 
-watch(data, (val) => {
-  const t = val?.data ?? val
-  if (t) {
-    form.subject         = t.subject
-    form.requester_name  = t.requester_name
-    form.requester_email = t.requester_email
-    form.status          = t.status
-    form.priority        = t.priority
-    form.description     = t.description
+// Fetch ticket data using composable
+// Uses: useTickets().getTicket()
+const { data } = await useAsyncData(`ticket-${ticketId}`, () => 
+  getTicket(ticketId)
+)
+
+watch(data, (ticketData: any) => {
+  if (ticketData) {
+    form.subject = ticketData.subject ?? ''
+    form.requester_name = ticketData.requester_name ?? ''
+    form.requester_email = ticketData.requester_email ?? ''
+    form.status = ticketData.status ?? 'open'
+    form.priority = ticketData.priority ?? 'medium'
+    form.description = ticketData.description ?? ''
   }
 }, { immediate: true })
 
 const submitting = ref(false)
-const formRef = ref(null)
+const formRef = ref<any>(null)
 
+// Rules for form validation
 const rules = {
-  subject:         [{ required: true, message: 'Subject is required' }],
-  requester_name:  [{ required: true, message: 'Name is required' }],
+  subject: [
+    { required: true, message: 'Subject is required' }
+  ],
+  requester_name: [
+    { required: true, message: 'Name is required' }
+  ],
   requester_email: [
     { required: true, message: 'Email is required' },
-    { type: 'email', message: 'Enter a valid email' },
+    { type: 'email' as const, message: 'Enter a valid email' }
   ],
-  status:      [{ required: true, message: 'Select a status' }],
-  priority:    [{ required: true, message: 'Select a priority' }],
-  description: [{ required: true, message: 'Description is required' }],
+  status: [
+    { required: true, message: 'Select a status' }
+  ],
+  priority: [
+    { required: true, message: 'Select a priority' }
+  ],
+  description: [
+    { required: true, message: 'Description is required' }
+  ],
 }
 
+// Handle form update
+// Uses composable: useTickets().updateTicket()
 async function handleUpdate() {
   const invalid = await formRef.value?.validate()
   if (invalid) return
 
   submitting.value = true
   try {
-    await $fetch(`${config.public.apiBase}/tickets/${ticketId}`, {
-      method: 'PUT',
-      body: form,
-    })
-    Message.success('Ticket updated!')
-    router.push('/tickets')
+    await updateTicket(ticketId, form)
+    navigateTo('/tickets')
   } catch (err) {
-    Message.error('Failed to update ticket')
+    console.error('Update ticket failed:', err)
   } finally {
     submitting.value = false
   }
