@@ -14,17 +14,17 @@ export default defineNuxtConfig({
     sanctum: {
         baseUrl: 'http://localhost:8000',         
         mode: 'cookie',                            
-        endpoints: {
+        endpoints: { // to send API requests
             csrf: '/sanctum/csrf-cookie',          
             login: '/api/login',                    
             logout: '/api/logout',                 
             user: '/api/user',                     
         },
-        redirect: {
-            onLogin: '/tickets',                    // Redirect after login
-            onLogout: '/login',                     // Redirect after logout
-            onAuthOnly: '/login',                   // Redirect if not authenticated
-            onGuestOnly: '/tickets',                // Redirect if already authenticated
+        redirect: { // where to send the user on the screen
+            onLogin: '/tickets',                    
+            onLogout: '/login',                    
+            onAuthOnly: '/login',                  
+            onGuestOnly: '/tickets',               
         },
     },
 

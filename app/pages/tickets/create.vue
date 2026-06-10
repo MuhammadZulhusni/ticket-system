@@ -10,11 +10,11 @@
           </AFormItem>
 
           <AFormItem field="requester_name" label="Your Name" required>
-            <AInput v-model="form.requester_name" placeholder="Enter your name" :readonly="!!user" />
+            <AInput v-model="form.requester_name" :readonly="!!user" />
           </AFormItem>
 
           <AFormItem field="requester_email" label="Your Email" required>
-            <AInput v-model="form.requester_email" placeholder="your@email.com" :readonly="!!user" />
+            <AInput v-model="form.requester_email" :readonly="!!user" />
           </AFormItem>
 
           <div class="grid grid-cols-2 gap-4">
