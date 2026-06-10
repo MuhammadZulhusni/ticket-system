@@ -10,11 +10,11 @@
           </AFormItem>
 
           <AFormItem field="requester_name" label="Your Name" required>
-            <AInput v-model="form.requester_name" placeholder="Enter your name" />
+            <AInput v-model="form.requester_name" placeholder="Enter your name" :readonly="!!user" />
           </AFormItem>
 
           <AFormItem field="requester_email" label="Your Email" required>
-            <AInput v-model="form.requester_email" placeholder="your@email.com" />
+            <AInput v-model="form.requester_email" placeholder="your@email.com" :readonly="!!user" />
           </AFormItem>
 
           <div class="grid grid-cols-2 gap-4">
@@ -57,7 +57,8 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
+import { reactive, ref, watch } from 'vue'
+import { useAuth } from '~/composables/useAuth'  
 
 // Import composable
 import { useTickets } from '~/composables/useTickets'
@@ -68,6 +69,7 @@ definePageMeta({
 })
 
 const { createTicket } = useTickets()
+const { user } = useAuth()
 
 interface TicketForm {
   subject: string
@@ -126,4 +128,12 @@ async function handleSubmit() {
     submitting.value = false
   }
 }
+
+// Auto-fill when user is available
+watch(user, (currentUser) => {
+  if (currentUser) {
+    form.requester_name = currentUser.name ?? ''
+    form.requester_email = currentUser.email ?? ''
+  }
+}, { immediate: true })  // immediate:true handles if user already loaded
 </script>
