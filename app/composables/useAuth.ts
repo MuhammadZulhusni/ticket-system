@@ -1,8 +1,8 @@
 // pages/login.vue (handleLogin)
 // pages/register.vue (handleRegister)
 // pages/tickets/index.vue (handleLogout)
-// Any page with logout button (handleLogout)
-// Any page needing current user info (user)
+// for page with logout button (handleLogout)
+// for page need current user info (user)
  
 import { Message } from '@arco-design/web-vue'
 

@@ -1,6 +1,6 @@
 // pages/tickets/index.vue (getStatusColor, getPriorityColor, formatStatus, formatPriority)
 // pages/tickets/[id]/index.vue (getStatusColor, getPriorityColor, formatStatus, formatPriority, formatDate)
-// Any page displaying ticket status/priority badges or dates
+// for page displaying ticket status/priority badges or dates
 
 export const useHelpers = () => {
 

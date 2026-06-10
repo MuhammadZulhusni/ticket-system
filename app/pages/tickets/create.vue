@@ -62,6 +62,7 @@ import { reactive, ref } from 'vue'
 // Import composable
 import { useTickets } from '~/composables/useTickets'
 
+// middleware 'sanctum:auth' will check session, if dah login can proceed to this page
 definePageMeta({
   middleware: ['sanctum:auth']
 })

@@ -102,6 +102,7 @@ import { useRoute } from 'vue-router'
 // Import composable
 import { useAuth } from '~/composables/useAuth'
 
+// this page only can be acces for that user not login yet (guest)
 definePageMeta({
   middleware: 'sanctum:guest',
 })
