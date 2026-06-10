@@ -135,5 +135,5 @@ watch(user, (currentUser) => {
     form.requester_name = currentUser.name ?? ''
     form.requester_email = currentUser.email ?? ''
   }
-}, { immediate: true })  // immediate:true handles if user already loaded
+}, { immediate: true })  
 </script>
